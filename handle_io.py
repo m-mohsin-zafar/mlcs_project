@@ -99,12 +99,10 @@ class io:
         result = np.row_stack((glob_f, result))
         np.savetxt(path, result, delimiter=',', fmt="%s")
 
-
     @staticmethod
     def save_samples_as_csv(samples):
         for sample in samples:
             pass
-
 
     @staticmethod
     def save_objects_as_pickle(objects, file_name):
@@ -112,7 +110,6 @@ class io:
             for object in objects:
                 pickle.dump(object, f)
         f.close()
-
 
     @staticmethod
     def load_from_csv(modes_files_path, mode):
@@ -135,7 +132,7 @@ class io:
     @staticmethod
     def get_upper_directory_name(file_path):
         par = os.path.dirname(file_path)
-        return par[par.rfind('/')+1:]
+        return par[par.rfind('/') + 1:]
 
     @staticmethod
     def get_md5(file_path):
@@ -158,11 +155,11 @@ class io:
         return os.path.basename(file_path)
 
     @staticmethod
-    def save_txt(strings, file_path, append= True):
+    def save_txt(strings, file_path, append=True):
         if not os.path.isfile(file_path):
             file = open(file_path, 'w')
             file.close()
         with open(file_path, "a") as myfile:
             for string in strings:
-                myfile.write(string+'\n')
+                myfile.write(string + '\n')
             myfile.close()

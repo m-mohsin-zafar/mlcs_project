@@ -6,17 +6,18 @@ Created on Mon Apr 15 11:38:50 2019
 @author: mohsin
 """
 
-from multiprocessing import Pool
+import time
+import traceback
 from csv import writer
+import numpy
 import six
 from feature_extraction import *
 from header_construction import *
 from settings import *
-from handle_io import io
-import os, gzip, time, numpy, traceback
+
 
 def asm_extraction(dataset_type):
-    read_mode, write_mode = ('r', 'w') if six.PY2 else ('rt','wt')
+    read_mode, write_mode = ('r', 'w') if six.PY2 else ('rt', 'wt')
 
     defined_apis = io.read_all_lines(APIS_PATH)
     defined_apis = defined_apis[0].split(',')
@@ -25,12 +26,12 @@ def asm_extraction(dataset_type):
     files = os.listdir(directory_name)
     files = numpy.sort(files)
     asm_files = [i for i in files if i.endswith('.asm.gz')]
-#    asm_files = [i for i in files if i.endswith('.asm')]
+    #    asm_files = [i for i in files if i.endswith('.asm')]
 
     asm_csv = ASM_CSV_PATH + dataset_type + '_asm_csv.gz'
 
-#    if not os.path.isdir(SAVED_PATH_CSV + dataset_type):
-#        makedirs(SAVED_PATH_CSV + dataset_type)
+    #    if not os.path.isdir(SAVED_PATH_CSV + dataset_type):
+    #        makedirs(SAVED_PATH_CSV + dataset_type)
 
     symbols_csv = open(SAVED_PATH_CSV + dataset_type + '/asm_symbols.csv', write_mode)
     meta_data_csv = open(SAVED_PATH_CSV + dataset_type + '/asm_meta_data.csv', write_mode)
@@ -47,9 +48,8 @@ def asm_extraction(dataset_type):
     sections_time = []
     data_define_time = []
     apis_time = []
-    
-    log_file = open("logs.txt", "w+")
 
+    log_file = open("logs.txt", "w+")
 
     with gzip.open(asm_csv, write_mode) as f_asm_csv:
         # Header construction
@@ -92,14 +92,14 @@ def asm_extraction(dataset_type):
         rows = []
         for t, fname in enumerate(asm_files):
             f = gzip.open(directory_name + fname, read_mode, encoding='utf-8', errors='ignore')
-#            f = open(directory_name + fname, read_mode, errors='ignore')
+            #            f = open(directory_name + fname, read_mode, errors='ignore')
 
-            #Meta data
+            # Meta data
             try:
                 f2 = gzip.open(directory_name + fname, 'r')
-#                f2 = open(directory_name + fname, 'r')
+                #                f2 = open(directory_name + fname, 'r')
                 start_time = time.time()
-                meta_data = asm_meta_data(directory_name+fname, f2)
+                meta_data = asm_meta_data(directory_name + fname, f2)
                 required_time = time.time() - start_time
                 m_data_time.append(required_time)
                 meta_data_csv_w.writerows([meta_data])
@@ -147,7 +147,7 @@ def asm_extraction(dataset_type):
                 f.seek(0)
 
                 start_time = time.time()
-                apis = asm_APIs(f,defined_apis)
+                apis = asm_APIs(f, defined_apis)
                 required_time = time.time() - start_time
                 apis_time.append(required_time)
                 apis_csv_w.writerows([apis])
@@ -155,20 +155,19 @@ def asm_extraction(dataset_type):
             except Exception as err:
                 print(err, traceback.print_exc())
                 print("Error", fname)
-                log_file.write((str(t+1) + '\t Not Done \t Filename: ' + fname))
+                log_file.write((str(t + 1) + '\t Not Done \t Filename: ' + fname))
 
             # Row added
             whole = meta_data + symbols + registers + opcodes + sections + data_defines + apis
             rows.append([fname[:fname.find('.asm.gz')]] + whole)
 
             # Writing rows after every 22 files processed
-            if (t+1) % 22 == 0:
+            if (t + 1) % 22 == 0:
                 fw.writerows(rows)
-                print(t+1)
-                rows = []    
-            
-            log_file.write((str(t+1) + '\t Done \t Filename: ' + fname))
-            
+                print(t + 1)
+                rows = []
+
+            log_file.write((str(t + 1) + '\t Done \t Filename: ' + fname))
 
     # Save the time
     m_data_time_str = ', '.join(str(x) for x in m_data_time)
@@ -179,12 +178,13 @@ def asm_extraction(dataset_type):
     data_define_time_str = ', '.join(str(x) for x in data_define_time)
     apis_time_str = ', '.join(str(x) for x in apis_time)
 
-    io.save_txt(('asm_meta_data_'+dataset_type, m_data_time_str,'asm_sym_'+dataset_type, symbols_time_str,
-                 'asm_registers_'+dataset_type, registers_time_str,'asm_opcodes_'+dataset_type, opcodes_time_str,
-                 'asm_sections_'+dataset_type, sections_time_str,'asm_datadefine_'+dataset_type, data_define_time_str,
-                 'asm_apis_'+dataset_type, apis_time_str
+    io.save_txt(('asm_meta_data_' + dataset_type, m_data_time_str, 'asm_sym_' + dataset_type, symbols_time_str,
+                 'asm_registers_' + dataset_type, registers_time_str, 'asm_opcodes_' + dataset_type, opcodes_time_str,
+                 'asm_sections_' + dataset_type, sections_time_str, 'asm_datadefine_' + dataset_type,
+                 data_define_time_str,
+                 'asm_apis_' + dataset_type, apis_time_str
                  ), ASM_TIME_PATH)
-    
+
     log_file.close()
 
 

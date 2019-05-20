@@ -1,8 +1,8 @@
-import sys
 from numba.decorators import autojit
 import numpy as np
-import os, gzip
+import os
 import hickle
+
 
 def H1(data, block_size, step, counts, ent):
     entropy = 0.0
@@ -13,11 +13,11 @@ def H1(data, block_size, step, counts, ent):
     for i in range(counts.shape[0]):
         if counts[i] > 0:
             entropy += - counts[i] // block_size * \
-                np.log2(counts[i] // block_size)
+                       np.log2(counts[i] // block_size)
 
-    #cb0 = counts[np.where(counts>0)]
+    # cb0 = counts[np.where(counts>0)]
 
-    #entropy = np.sum(-cb0/block_size * np.log2(cb0/block_size))
+    # entropy = np.sum(-cb0/block_size * np.log2(cb0/block_size))
     ent[0] = entropy
 
     for i in range(1, data.shape[0] - block_size):
@@ -31,7 +31,7 @@ def H1(data, block_size, step, counts, ent):
         entropy -= -dec / block_size * np.log2(dec / block_size)
         if dec > 1:
             entropy += -(dec - 1) / block_size * \
-                np.log2((dec - 1) / block_size)
+                       np.log2((dec - 1) / block_size)
 
         if inc > 0:
             entropy -= -inc / block_size * np.log2(inc / block_size)
@@ -44,8 +44,8 @@ def H1(data, block_size, step, counts, ent):
 
 H_numba = autojit(H1, nopython=True)
 
-def get_entropy_features(byte_data):
 
+def get_entropy_features(byte_data):
     corr = {str(key): key for key in range(10)}
     corrl = {'A': 10, 'B': 11, 'C': 12, 'D': 13, 'E': 14, 'F': 15, '?': 16}
     corr.update(corrl)
@@ -53,9 +53,9 @@ def get_entropy_features(byte_data):
     block_size = 10000
     step = 100
     text = byte_data
-    #name = filename.split('/')[-1].split('.')[0]
+    # name = filename.split('/')[-1].split('.')[0]
 
-    #with gzip.open(filename, 'r') as f:
+    # with gzip.open(filename, 'r') as f:
     #    text = f.read()
 
     lines = ''.join(byte_data).split('\n')
@@ -73,7 +73,7 @@ def get_entropy_features(byte_data):
     ent = np.zeros((chararray.shape[0] - block_size) // step + 1)
     H_numba(chararray, block_size, step, counts, ent)
 
-    #return [name, ent]
+    # return [name, ent]
     return ent
 
 
@@ -100,7 +100,7 @@ def get_percentiles(data, num, diffs=False):
 
 
 def get_feats(data_raw):
-    #data_raw = np.array(data_raw)
+    # data_raw = np.array(data_raw)
     num_blocks = 4
     feats = []
     for i in range(len(data_raw)):
@@ -146,20 +146,20 @@ def get_feats(data_raw):
 
 
 def dump_names(ent_feats_dir):
-    st = ['mean','var','median','max','min','max-min']
+    st = ['mean', 'var', 'median', 'max', 'min', 'max-min']
 
     n = []
-    n.extend( ['ent_q_diffs_' + str(x) for x in range(21) ])
-    n.extend( ['ent_q_diffs_' + x for x in st])
+    n.extend(['ent_q_diffs_' + str(x) for x in range(21)])
+    n.extend(['ent_q_diffs_' + x for x in st])
 
-    n.extend( ['ent_q_diff_diffs_' + str(x) for x in range(21) ])
-    n.extend( ['ent_q_diff_diffs_' + x for x in st])
+    n.extend(['ent_q_diff_diffs_' + str(x) for x in range(21)])
+    n.extend(['ent_q_diff_diffs_' + x for x in st])
 
     for i in range(4):
-        n.extend( ['ent_q_diff_block_' + str(i) + '_' + str(x) for x in range(21) ])
-        n.extend( ['ent_q_diff_diffs_'+ str(i) + '_' + x for x in st])
+        n.extend(['ent_q_diff_block_' + str(i) + '_' + str(x) for x in range(21)])
+        n.extend(['ent_q_diff_diffs_' + str(i) + '_' + x for x in st])
 
-    n.extend( ['ent_p_' + str(x) for x in range(20) ])
-    n.extend( ['ent_p_diffs_' + str(x) for x in range(20) ])
+    n.extend(['ent_p_' + str(x) for x in range(20)])
+    n.extend(['ent_p_diffs_' + str(x) for x in range(20)])
 
-    hickle.dump(n,os.path.join(ent_feats_dir,'ent_feats_names'))
+    hickle.dump(n, os.path.join(ent_feats_dir, 'ent_feats_names'))

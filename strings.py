@@ -1,7 +1,8 @@
-import numpy as np
-from numba.decorators import jit, autojit
+import os
 import hickle
-import os, gzip
+import numpy as np
+from numba.decorators import autojit
+
 
 def binary_search(a, x):
     lo = 0
@@ -17,11 +18,11 @@ def binary_search(a, x):
             return mid
     return -1
 
+
 binary_search_numba = autojit(binary_search, nopython=True)
 
 
 def extract(all_elems_codes, out, ascii_list):
-
     MAX_STR = out.shape[0]
 
     cur_num_str = 0
@@ -48,7 +49,7 @@ def extract(all_elems_codes, out, ascii_list):
                     count_two += 1
                 elif (cur_end - i - 1 == 3):
                     count_three += 1
-                    
+
             state = 1
             cur_end = i
         else:
@@ -74,10 +75,12 @@ def extract(all_elems_codes, out, ascii_list):
 
 ex_numba = autojit(extract, nopython=True)
 
+
 def get_dict():
     d = {format(key, '02X'): key for key in range(256)}
     d['??'] = 256
     return d
+
 
 def get_strings(byte_data):
     text = byte_data
@@ -96,49 +99,46 @@ def get_strings(byte_data):
 
     all_elems_codes = np.array(all_elems_codes)
     out_ = np.zeros([15000, 2], dtype=np.int64)
-    m,count_one,count_two, count_three = ex_numba(all_elems_codes, out_, ascii_list)
+    m, count_one, count_two, count_three = ex_numba(all_elems_codes, out_, ascii_list)
 
-    string_total_len = np.sum(out_[:,1] - out_[:,0]) + count_one + count_two + count_three
-    string_ratio = float(string_total_len)/len(all_elems_codes)
+    string_total_len = np.sum(out_[:, 1] - out_[:, 0]) + count_one + count_two + count_three
+    string_ratio = float(string_total_len) / len(all_elems_codes)
 
     strings = []
     for i in range(m):
         strings.extend(
             [''.join([chr(x) for x in all_elems_codes[out_[i, 0]:out_[i, 1]]])])
 
-    return [name, strings, [count_one,count_two,count_three,string_total_len,string_ratio]]
-
+    return [name, strings, [count_one, count_two, count_three, string_total_len, string_ratio]]
 
 
 def extract_length(data):
-
     another_f = np.vstack([x[2] for x in data])
 
-    len_arrays = [np.array([len(y) for y in x[1]] + [0]+[10000]) for x in data]
-    bincounts = [ np.bincount(arr) for  arr in len_arrays]
+    len_arrays = [np.array([len(y) for y in x[1]] + [0] + [10000]) for x in data]
+    bincounts = [np.bincount(arr) for arr in len_arrays]
 
-    counts  = np.concatenate([another_f[:,:3],  np.vstack([ arr[4:100] for  arr in bincounts])],axis = 1)
-    counts_0_10  =  np.sum(counts[:,0:10],axis = 1)[:,None]
-    counts_10_30  =  np.sum(counts[:,10:30],axis = 1)[:,None]
-    counts_30_60  =  np.sum(counts[:,30:60],axis = 1)[:,None]
-    counts_60_90  =  np.sum(counts[:,60:90],axis = 1)[:,None] 
-    counts_0_100  =  np.sum(counts[:,0:100],axis = 1)[:,None] 
+    counts = np.concatenate([another_f[:, :3], np.vstack([arr[4:100] for arr in bincounts])], axis=1)
+    counts_0_10 = np.sum(counts[:, 0:10], axis=1)[:, None]
+    counts_10_30 = np.sum(counts[:, 10:30], axis=1)[:, None]
+    counts_30_60 = np.sum(counts[:, 30:60], axis=1)[:, None]
+    counts_60_90 = np.sum(counts[:, 60:90], axis=1)[:, None]
+    counts_0_100 = np.sum(counts[:, 0:100], axis=1)[:, None]
 
-    counts_100_150  = [np.sum(arr[100:150]) for  arr in bincounts]
-    counts_150_250  = [np.sum(arr[150:250]) for  arr in bincounts]
-    counts_250_400  = [np.sum(arr[250:450]) for  arr in bincounts]
-    counts_400_600  = [np.sum(arr[400:600]) for  arr in bincounts]
-    counts_600_900  = [np.sum(arr[600:900]) for  arr in bincounts]
-    counts_900_1300  = [np.sum(arr[900:1300]) for  arr in bincounts]
-    counts_1300_2000  = [np.sum(arr[1300:2000]) for  arr in bincounts]
-    counts_2000_3000  = [np.sum(arr[2000:3000]) for  arr in bincounts]
-    counts_3000_6000  = [np.sum(arr[3000:6000]) for  arr in bincounts]
-    counts_6000_15000 = [np.sum(arr[6000:15000]) for  arr in bincounts]
+    counts_100_150 = [np.sum(arr[100:150]) for arr in bincounts]
+    counts_150_250 = [np.sum(arr[150:250]) for arr in bincounts]
+    counts_250_400 = [np.sum(arr[250:450]) for arr in bincounts]
+    counts_400_600 = [np.sum(arr[400:600]) for arr in bincounts]
+    counts_600_900 = [np.sum(arr[600:900]) for arr in bincounts]
+    counts_900_1300 = [np.sum(arr[900:1300]) for arr in bincounts]
+    counts_1300_2000 = [np.sum(arr[1300:2000]) for arr in bincounts]
+    counts_2000_3000 = [np.sum(arr[2000:3000]) for arr in bincounts]
+    counts_3000_6000 = [np.sum(arr[3000:6000]) for arr in bincounts]
+    counts_6000_15000 = [np.sum(arr[6000:15000]) for arr in bincounts]
 
-    med = np.array([np.median([len(y) for y in x[1]] + [0])  for x in data ])[:,None]
-    mean = np.array([np.mean([len(y) for y in x[1]] + [0])  for x in data ])[:,None]
-    var = np.array([np.var([len(y) for y in x[1]] + [0])  for x in data ])[:,None]
-
+    med = np.array([np.median([len(y) for y in x[1]] + [0]) for x in data])[:, None]
+    mean = np.array([np.mean([len(y) for y in x[1]] + [0]) for x in data])[:, None]
+    var = np.array([np.var([len(y) for y in x[1]] + [0]) for x in data])[:, None]
 
     feats = np.concatenate([np.vstack(counts),
                             counts_0_10,
@@ -146,24 +146,23 @@ def extract_length(data):
                             counts_30_60,
                             counts_60_90,
                             counts_0_100,
-                            np.array(counts_100_150)[:,None],
-                            np.array(counts_150_250)[:,None],
-                            np.array(counts_250_400)[:,None],
-                            np.array(counts_400_600)[:,None],
-                            np.array(counts_600_900)[:,None],  
-                            np.array(counts_900_1300)[:,None], 
-                            np.array(counts_1300_2000)[:,None],
-                            np.array(counts_2000_3000)[:,None],
-                            np.array(counts_3000_6000)[:,None],
-                            np.array(counts_6000_15000)[:,None],
-                            another_f[:,3:]
-                            ],axis = 1)
+                            np.array(counts_100_150)[:, None],
+                            np.array(counts_150_250)[:, None],
+                            np.array(counts_250_400)[:, None],
+                            np.array(counts_400_600)[:, None],
+                            np.array(counts_600_900)[:, None],
+                            np.array(counts_900_1300)[:, None],
+                            np.array(counts_1300_2000)[:, None],
+                            np.array(counts_2000_3000)[:, None],
+                            np.array(counts_3000_6000)[:, None],
+                            np.array(counts_6000_15000)[:, None],
+                            another_f[:, 3:]
+                            ], axis=1)
     return feats
 
 
-
 def dump_names(strings_feats_dir):
-    n = ['string_len_counts_' + str(x) for x in range(1,100)] + [
+    n = ['string_len_counts_' + str(x) for x in range(1, 100)] + [
         'string_len_counts_0_10',
         'string_len_counts_10_30',
         'string_len_counts_30_60',
@@ -183,5 +182,4 @@ def dump_names(strings_feats_dir):
         'string_ratio'
     ]
 
-
-    hickle.dump(n,os.path.join(strings_feats_dir,'strings_feats_names'))
+    hickle.dump(n, os.path.join(strings_feats_dir, 'strings_feats_names'))
