@@ -114,3 +114,12 @@ data/processed/train_proc.csv
 /train_asm.csv
 /check.csv
 /trash/
+/trash/pca_impl.py
+/trash/clf_svm_subdiv_c_pycm.py
+/trash/clf_svm_sub_div_c.py
+/trash/clf_svm_sub_div_b.py
+/trash/clf_svm_subdiv_b_pycm.py
+/trash/clf_svm_subdiv_a_pycm.py
+/trash/clf_svm_sub_div_a.py
+/trash/metric_eval_console_output.txt
+/trash/metric_eval_pca_console_output.txt
