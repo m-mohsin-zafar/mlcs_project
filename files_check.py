@@ -7,9 +7,10 @@ Created on Tue Apr 16 13:19:49 2019
 """
 
 import re
+import os
 
 
-log_file_path = "/home/mohsin/Kaggle_datasets/malware_c/code_2/logs.txt"
+log_file_path = os.path.join(os.getcwd(), 'feature_ext', 'logs.txt')
 
 file_text = []
 files = []

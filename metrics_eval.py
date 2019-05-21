@@ -70,8 +70,8 @@ knn_results_df = pd.read_csv(os.path.join(knn_pycm_dumps_path, 'knn_results.csv'
 best_knn = knn_results_df.loc[knn_results_df['overall_mean'].idxmax()]
 
 # Based on AUC ROC Scores
-linear_svm_auc_roc_results_df = pd.read_csv(os.path.join(dumps_path, "linear_svm_metrics.csv"))
-rbf_svm_auc_roc_results_df = pd.read_csv(os.path.join(dumps_path, "rbf_svm_metrics.csv"))
+linear_svm_auc_roc_results_df = pd.read_csv(os.path.join(svm_auc_roc_dumps_path, "linear_svm_metrics.csv"))
+rbf_svm_auc_roc_results_df = pd.read_csv(os.path.join(svm_auc_roc_dumps_path, "rbf_svm_metrics.csv"))
 
 best_linear_svm_roc = linear_svm_auc_roc_results_df.loc[linear_svm_auc_roc_results_df['overall_mean'].idxmax()]
 best_rbf_svm_roc = rbf_svm_auc_roc_results_df.loc[rbf_svm_auc_roc_results_df['overall_mean'].idxmax()]

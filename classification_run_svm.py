@@ -45,7 +45,7 @@ def perform_kfcv(model, X, Y, folds, dump_filename):
         scores.append(roc_auc)
 
     scores_df = pd.DataFrame(scores)
-    scores_df.to_csv(os.path.join(dumps_path, (dump_filename+".csv")), index=False)
+    scores_df.to_csv(os.path.join(svm_auc_roc_dumps_path, (dump_filename+".csv")), index=False)
     return scores_df.mean(axis=0).tolist()
 
 
@@ -125,17 +125,18 @@ def main():
     rbf_svm_scores_df = rbf_svm_scores_df.assign(overall_mean=rbf_svm_scores_df.iloc[:, 3:].mean(axis=1).tolist())
 
     # Saving DataFrames for future Reference
-    linear_svm_scores_df.to_csv(os.path.join(dumps_path, "linear_svm_metrics.csv"), index=False)
-    poly_svm_scores_df.to_csv(os.path.join(dumps_path, "poly_svm_metrics.csv"), index=False)
-    rbf_svm_scores_df.to_csv(os.path.join(dumps_path, "rbf_svm_metrics.csv"), index=False)
+    linear_svm_scores_df.to_csv(os.path.join(svm_auc_roc_dumps_path, "linear_svm_metrics.csv"), index=False)
+    poly_svm_scores_df.to_csv(os.path.join(svm_auc_roc_dumps_path, "poly_svm_metrics.csv"), index=False)
+    rbf_svm_scores_df.to_csv(os.path.join(svm_auc_roc_dumps_path, "rbf_svm_metrics.csv"), index=False)
 
     # Finding Best Scores and Configurations for each Model Based on Overall Mean
     best_linear = linear_svm_scores_df.loc[linear_svm_scores_df['overall_mean'].idxmax()]
     best_poly = poly_svm_scores_df.loc[poly_svm_scores_df['overall_mean'].idxmax()]
     best_rbf = rbf_svm_scores_df.loc[rbf_svm_scores_df['overall_mean'].idxmax()]
 
-    # Saving resultant list object
-    # save_object(clf_conf_list, 'pycm_all_cm_results_list_1_obj.pkl')
+    print(best_linear)
+    print(best_poly)
+    print(best_rbf)
 
 
 if __name__ == "__main__":
