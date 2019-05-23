@@ -123,3 +123,5 @@ data/processed/train_proc.csv
 /trash/clf_svm_sub_div_a.py
 /trash/metric_eval_console_output.txt
 /trash/metric_eval_pca_console_output.txt
+.idea/other.xml
+.idea/workspace.xml
